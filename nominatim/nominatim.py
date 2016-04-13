@@ -13,11 +13,13 @@ import logging
 import sys
 if sys.version_info.major == 2:
     from urllib2 import urlopen
+    from urllib2 import Request
     from urllib2 import URLError
     from urllib import quote_plus
 else:
     from urllib.request import urlopen
     from urllib.error import URLError
+    from urllib import Request
     from urllib.parse import quote_plus
 
 default_url = 'http://open.mapquestapi.com/nominatim/v1'
@@ -47,13 +49,14 @@ class NominatimRequest(object):
     """
     Abstract base class for connections to a Nominatim instance
     """
-    def __init__(self, base_url=None):
+    def __init__(self, base_url=None,referer=None):
         """
         Provide logging and set the Nominatim instance
         (defaults to http://nominatim.openstreetmap.org )
         """
         self.logger = logging.getLogger(__name__)
         self.url = base_url.rstrip('/') if base_url is not None else default_url
+        self.referer=referer
 
     def request(self, url):
         """
@@ -65,10 +68,14 @@ class NominatimRequest(object):
         """
         self.logger.debug('url:\n' + url)
         try:
-            response = urlopen(url)
+            req = Request(url)
+            if not self.referer is None:
+                req.add_header('Referer', self.referer)
+            response = urlopen(req)
             return json.loads(response.read().decode('utf-8'))
-        except URLError:
+        except URLError as e:
             self.logger.info('Server connection problem')
+            self.logger.debug(e)
         except Exception:
             self.logger.info('Server format problem')
 
@@ -81,12 +88,12 @@ class Nominatim(NominatimRequest):
 
         http://wiki.openstreetmap.org/wiki/Nominatim#Search
     """
-    def __init__(self, base_url=None):
+    def __init__(self, base_url=None,referer=None):
         """
         Set the Nominatim instance using its *base_url*;
         defaults to http://nominatim.openstreetmap.org
         """
-        super(Nominatim, self).__init__(base_url)
+        super(Nominatim, self).__init__(base_url,referer)
         self.url += '/search?format=json'
 
     def query(self, address, acceptlanguage=None, limit=20,
