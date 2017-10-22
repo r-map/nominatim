@@ -22,7 +22,7 @@ else:
     from urllib import Request
     from urllib.parse import quote_plus
 
-default_url = 'http://open.mapquestapi.com/nominatim/v1'
+default_url = 'http://nominatim.openstreetmap.org/search'
 """
 URL of the default Nominatim instance
 """
@@ -69,6 +69,7 @@ class NominatimRequest(object):
         self.logger.debug('url:\n' + url)
         try:
             req = Request(url)
+            req.add_header('User-Agent', 'pynominatim')	
             if not self.referer is None:
                 req.add_header('Referer', self.referer)
             response = urlopen(req)
@@ -97,7 +98,7 @@ class Nominatim(NominatimRequest):
         self.url += '/search?format=json'
 
     def query(self, address, acceptlanguage=None, limit=20,
-              countrycodes=None):
+              countrycodes=None, addressdetails=False):
         """
         Issue a geocoding query for *address* to the
         Nominatim instance and return the decoded results
@@ -113,10 +114,12 @@ class Nominatim(NominatimRequest):
              given by their ISO 3166-1alpha2 codes (cf.
              https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 )
         :type countrycodes: str iterable
+        :param addressdetails: indicate if deails wanted
+        :type addressdetails: bool
         :returns: a list of search results (each a dict)
         :rtype: list or None
         """
-        url = self.url + '&q=' + quote_plus(address)
+        url = self.url + '&q=' + quote_plus(address.encode('utf8'))
         if acceptlanguage:
             url += '&accept-language=' + acceptlanguage
         if limit:
