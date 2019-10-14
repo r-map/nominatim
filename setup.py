@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='nominatim',
-    version='0.2',
+    version='0.3',
     author='Damian Braun',
     author_email='brunek5252@gmail.com',
     url='https://github.com/damianbraun/nominatim',
