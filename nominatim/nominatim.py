@@ -22,6 +22,8 @@ else:
     from urllib.request import Request
     from urllib.parse import quote_plus
 
+#import traceback
+    
 default_url = 'https://nominatim.openstreetmap.org'
 """
 URL of the default Nominatim instance
@@ -73,13 +75,15 @@ class NominatimRequest(object):
             if not self.referer is None:
                 req.add_header('Referer', self.referer)
             response = urlopen(req)
-            return json.loads(response.read().decode('utf-8'))
+            return json.loads(response.read().decode('utf8'))
         except URLError as e:
             self.logger.info('Server connection problem')
             self.logger.debug(e)
-        except Exception:
+            #traceback.print_exc()
+        except Exception as e:
             self.logger.info('Server format problem')
-
+            self.logger.debug(e)
+            #traceback.print_exc()
 
 class Nominatim(NominatimRequest):
     """
@@ -138,12 +142,12 @@ class NominatimReverse(NominatimRequest):
 
         https://wiki.openstreetmap.org/wiki/Nominatim#Reverse_Geocoding_.2F_Address_lookup
     """
-    def __init__(self, base_url=default_url):
+    def __init__(self, base_url=default_url,referer=None):
         """
         Set the Nominatim instance using its *base_url*;
         defaults to https://nominatim.openstreetmap.org
         """
-        super(NominatimReverse, self).__init__(base_url)
+        super(NominatimReverse, self).__init__(base_url,referer)
         self.url += '/reverse?format=json'
 
     def query(self, lat=None, lon=None, osm_id=None, osm_type=None,
