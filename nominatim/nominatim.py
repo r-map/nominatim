@@ -19,10 +19,10 @@ if sys.version_info.major == 2:
 else:
     from urllib.request import urlopen
     from urllib.error import URLError
-    from urllib import Request
+    from urllib.request import Request
     from urllib.parse import quote_plus
 
-default_url = 'http://nominatim.openstreetmap.org/search'
+default_url = 'https://nominatim.openstreetmap.org'
 """
 URL of the default Nominatim instance
 """
@@ -49,18 +49,18 @@ class NominatimRequest(object):
     """
     Abstract base class for connections to a Nominatim instance
     """
-    def __init__(self, base_url=None,referer=None):
+    def __init__(self, base_url=default_url,referer=None):
         """
         Provide logging and set the Nominatim instance
-        (defaults to http://nominatim.openstreetmap.org )
+        (defaults to https://nominatim.openstreetmap.org )
         """
         self.logger = logging.getLogger(__name__)
-        self.url = base_url.rstrip('/') if base_url is not None else default_url
+        self.url = base_url
         self.referer=referer
 
     def request(self, url):
         """
-        Send a http request to the given *url*, try to decode
+        Send a https request to the given *url*, try to decode
         the reply assuming it's JSON in UTF-8, and return the result
 
         :returns: Decoded result, or None in case of an error
@@ -87,12 +87,12 @@ class Nominatim(NominatimRequest):
 
     Cf. Nominatim documentation::
 
-        http://wiki.openstreetmap.org/wiki/Nominatim#Search
+        https://wiki.openstreetmap.org/wiki/Nominatim#Search
     """
-    def __init__(self, base_url=None,referer=None):
+    def __init__(self, base_url=default_url,referer=None):
         """
         Set the Nominatim instance using its *base_url*;
-        defaults to http://nominatim.openstreetmap.org
+        defaults to https://nominatim.openstreetmap.org
         """
         super(Nominatim, self).__init__(base_url,referer)
         self.url += '/search?format=json'
@@ -136,12 +136,12 @@ class NominatimReverse(NominatimRequest):
 
     Cf. Nominatim documentation::
 
-        http://wiki.openstreetmap.org/wiki/Nominatim#Reverse_Geocoding_.2F_Address_lookup
+        https://wiki.openstreetmap.org/wiki/Nominatim#Reverse_Geocoding_.2F_Address_lookup
     """
-    def __init__(self, base_url=None):
+    def __init__(self, base_url=default_url):
         """
         Set the Nominatim instance using its *base_url*;
-        defaults to http://nominatim.openstreetmap.org
+        defaults to https://nominatim.openstreetmap.org
         """
         super(NominatimReverse, self).__init__(base_url)
         self.url += '/reverse?format=json'

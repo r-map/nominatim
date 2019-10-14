@@ -35,34 +35,34 @@ class TestNominatim(unittest.TestCase):
         self.logger.addHandler(self.loghandler)
 
     def test_geocoding_default_url(self):
-        n = Nominatim()
+        n = Nominatim(referer="rmap.cc")
         location = 'Helsinki'
         res = n.query(location)
-        self.assertTrue(result_has_osm_id(res, '34914'))
+        self.assertTrue(result_has_osm_id(res, 34914))
 
     def test_geocoding_osm_url(self):
-        n = Nominatim('http://nominatim.openstreetmap.org')
+        n = Nominatim('https://nominatim.openstreetmap.org',referer="rmap.cc")
         location = 'Helsinki'
         res = n.query(location)
-        self.assertTrue(result_has_osm_id(res, '34914'))
+        self.assertTrue(result_has_osm_id(res, 34914))
 
     def test_geocoding_invalid_url(self):
-        n = Nominatim('http://somereally.notexistingurl')
+        n = Nominatim('https://somereally.notexistingurl')
         self.connect_logger(n.logger)
         location = 'Helsinki'
         res = n.query(location)
         self.assertEqual(res, None)
         self.assertEqual(self.logstream.getvalue().strip().split('\n')[-1],
-            'Server connection problem')
+            '<urlopen error [Errno -2] Name or service not known>')
 
     def test_geocoding_wrong_result_format(self):
-        n = Nominatim('http://nominatim.openstreetmap.org/details.php')
+        n = Nominatim('https://nominatim.openstreetmap.org/details.php',referer="rmap.cc")
         self.connect_logger(n.logger)
         location = 'Helsinki'
         res = n.query(location)
         self.assertEqual(res, None)
         self.assertEqual(self.logstream.getvalue().strip().split('\n')[-1],
-            'Server format problem')
+            'HTTP Error 400: Bad Request')
 
     def test_reverse_geocoding_default_url(self):
         n = NominatimReverse()
@@ -74,7 +74,7 @@ class TestNominatim(unittest.TestCase):
         self.assertTrue(address_has_city(res['address'], 'Helsinki'))
 
     def test_reverse_geocoding_osm_url(self):
-        n = NominatimReverse('http://nominatim.openstreetmap.org')
+        n = NominatimReverse('https://nominatim.openstreetmap.org')
         lat = 60.1666277
         lon = 24.9435079
         res = n.query(lat=lat, lon=lon, zoom='city')
@@ -92,7 +92,7 @@ class TestNominatim(unittest.TestCase):
         self.assertTrue(address_has_city(res['address'], 'Helsinki'))
 
     def test_reverse_geocoding_from_osm_id_osm_url(self):
-        n = NominatimReverse('http://nominatim.openstreetmap.org')
+        n = NominatimReverse('https://nominatim.openstreetmap.org')
         osm_id = '184705'
         osm_type = 'R'
         res = n.query(osm_id=osm_id, osm_type=osm_type, zoom='city')
